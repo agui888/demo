@@ -131,3 +131,6 @@ int main()
 	ngx_destroy_pool(res_pool);
 	return 1;
 }
+
+
+//// [root@localhost main]#gcc ngx_main.c ngx_list.h ngx_list.c  ngx_palloc.h ngx_palloc.c -o a.out
