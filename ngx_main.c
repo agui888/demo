@@ -42,23 +42,22 @@ void dump_pool(ngx_pool_t* pool)
 
 void dump_list_part(ngx_list_t* list, ngx_list_part_t* part)
 {
-	dataMsg **ptr = (dataMsg **)(part->elts);
-    int loop = 0;
+	dataMsg *ptr = (part->elts);
+    int i = 0;
 
     printf("  .part = 0x%x\n", &(list->part));
     printf("    .elts = 0x%x  ", part->elts);
     printf("(");
 
-    for (; loop < list->nalloc - 1; loop++)
+    for (; i < list->nalloc - 1 ; i++)
     {
-    	if (ptr[loop])
-    	{
-    		  printf(" #%d# ", ((dataMsg *)( ((dataMsg **)ptr)[3]))->a);
-    	}
-         printf("%d-%p, ",loop, ptr[loop]);
+        if (ptr){
+            printf(" #%d  %s#", ((dataMsg *)ptr)->a, ((dataMsg *)ptr)->str);
+        }
+        ptr += list->size;
     }
 
-    printf("%d-%p)\n", loop, ptr[loop]);
+    printf("%d-%p)\n", part->nelts, ptr);
 
     printf("    .nelts = %d\n", part->nelts);
     printf("    .next = 0x%x", part->next);
@@ -86,6 +85,7 @@ void dump_list(ngx_list_t* list)
     {
         dump_list_part(list, part);
         part = part->next;
+        usleep(500);
     }
     printf("\n");
 }
@@ -98,9 +98,11 @@ void test_funcion(ngx_list_t *list)
 	int i;
 	for (i = 0; i < 15; i++)
 	{
-		dataMsg *ptr = ngx_list_push(list);
+		dataMsg *ptr = (dataMsg *)ngx_list_push(list);
 		ptr->a = 8;
 		ptr->str = "hello world";
+		printf(" --- i=%d", i);
+		usleep(500);
 	}
 	return ;
 }
@@ -112,7 +114,7 @@ int main()
 	int i;
 
 	dump_pool(res_pool);
-	ngx_list_t *list = ngx_list_create(res_pool, 5, sizeof(dataMsg));
+	ngx_list_t *list = ngx_list_create(res_pool, 6, sizeof(dataMsg));
 
 	test_funcion(list);
 
@@ -131,6 +133,7 @@ int main()
 	ngx_destroy_pool(res_pool);
 	return 1;
 }
+
 
 
 //// [root@localhost main]#gcc ngx_main.c ngx_list.h ngx_list.c  ngx_palloc.h ngx_palloc.c -o a.out
