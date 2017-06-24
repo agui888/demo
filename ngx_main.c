@@ -57,7 +57,7 @@ void dump_list_part(ngx_list_t* list, ngx_list_part_t* part)
         ptr += list->size;
     }
 
-    printf("%d-%p)\n", part->nelts, ptr);
+    printf("%d--%p)\n", part->nelts, ptr);
 
     printf("    .nelts = %d\n", part->nelts);
     printf("    .next = 0x%x", part->next);
