@@ -15,7 +15,7 @@ ngx_log_t *  ngx_log_init()
 typedef struct data
 {
 	int a ;
-	char *str;
+	char str[12];
 }dataMsg;
 
 
@@ -42,7 +42,7 @@ void dump_pool(ngx_pool_t* pool)
 
 void dump_list_part(ngx_list_t* list, ngx_list_part_t* part)
 {
-	dataMsg *ptr = (part->elts);
+	dataMsg *ptr = part->elts;
     int i = 0;
 
     printf("  .part = 0x%x\n", &(list->part));
@@ -54,10 +54,10 @@ void dump_list_part(ngx_list_t* list, ngx_list_part_t* part)
         if (ptr){
             printf(" #%d  %s#", ((dataMsg *)ptr)->a, ((dataMsg *)ptr)->str);
         }
-        ptr += list->size;
+        ptr += 1;
     }
 
-    printf("%d--%p)\n", part->nelts, ptr);
+    printf("%d-%p)\n", part->nelts, ptr);
 
     printf("    .nelts = %d\n", part->nelts);
     printf("    .next = 0x%x", part->next);
@@ -99,10 +99,9 @@ void test_funcion(ngx_list_t *list)
 	for (i = 0; i < 15; i++)
 	{
 		dataMsg *ptr = (dataMsg *)ngx_list_push(list);
-		ptr->a = 8;
-		ptr->str = "hello world";
-		printf(" --- i=%d", i);
-		usleep(500);
+		ptr->a = 8+i;
+		strcpy(ptr->str, "hello world");
+		printf("i=%d  ", i);
 	}
 	return ;
 }
@@ -112,11 +111,12 @@ int main()
 	ngx_log_t *res_log = ngx_log_init(); //得到日志对象
 	ngx_pool_t * res_pool = ngx_create_pool(1024, res_log);
 	int i;
-
 	dump_pool(res_pool);
-	ngx_list_t *list = ngx_list_create(res_pool, 6, sizeof(dataMsg));
 
+
+	ngx_list_t *list = ngx_list_create(res_pool, 6, sizeof(dataMsg));
 	test_funcion(list);
+
 
 	printf("--------------------------------\n");
 	printf("list链表详细:\n");
@@ -128,7 +128,6 @@ int main()
 	printf("the pool at the end:\n");
 	printf("--------------------------------\n");
 	dump_pool(res_pool);
-
 
 	ngx_destroy_pool(res_pool);
 	return 1;

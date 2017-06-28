@@ -26,7 +26,7 @@ struct ngx_list_part_s {
 typedef struct {
     ngx_list_part_t  *last; //链表中最后一个元素
     ngx_list_part_t   part; //链表中第一个元素
-    size_t            size; //链表中每个ngx_list_part_t的elts数组最大占用字节数
+     size_t            size; //链表中每个ngx_list_part_t的elts数组最大占用字节数
     ngx_uint_t        nalloc; //链表中每个ngx_list_part_t的elts数组最大大小
     ngx_pool_t       *pool; //当前list数据存放的内存池
 } ngx_list_t;

@@ -147,7 +147,7 @@ ngx_palloc(ngx_pool_t *pool, size_t size)
     return ngx_palloc_large(pool, size);
 }
 
-
+//与ngx_palloc函数一样 只是不对齐处理
 void *
 ngx_pnalloc(ngx_pool_t *pool, size_t size)
 {
