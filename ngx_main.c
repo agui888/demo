@@ -4,7 +4,7 @@
 #include "ngx_palloc.h"
 #include "ngx_list.h"
 
-static ngx_log_t        ngx_log;
+static ngx_log_t ngx_log;
 ngx_log_t *  ngx_log_init()
 {
     ngx_log.log_level = 6;
