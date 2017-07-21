@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "ngx_palloc.h"
 
 #ifndef DD_LOG
 #define DD_LOG 1
@@ -8,6 +9,15 @@
             fprintf(stderr, __VA_ARGS__); \
             fprintf(stderr, " at %s line %d.\n", __FILE__, __LINE__)
 #endif
+
+
+static ngx_log_t ngx_log;
+ngx_log_t *  ngx_log_init()
+{
+    ngx_log.log_level = 6;
+    ngx_log.data = "hello world";
+    return &ngx_log;
+}
 
 typedef struct _stritem {
     struct _stritem *next;
@@ -31,29 +41,6 @@ void item_init(void) {
     return;
 }
 
-void item_stats(char *buffer, int buflen) {
-    char *bufcurr = buffer;
-    if (buflen < 4096) {
-        strcpy(buffer, "SERVER_ERROR out of memory");
-        return;
-    }
-    item * res;
-    int i;
-    for (i=0; i<255; i++)
-    {
-        if (footers[i])
-        {
-        	res = footers[i];
-        	while(res)
-        	{
-        		 bufcurr += sprintf(bufcurr, "第%u号桶的链表 data:%u \r\n", i,  res->data);
-        		 res = res->prev;
-        	}
-        }
-    }
-    strcpy(bufcurr, "END");
-    return;
-}
 
 void item_link_q(item *it) {
     item **headres = &headers[it->slabs_clsid];//static item *
@@ -101,35 +88,52 @@ void item_unlink_q(item *it)
     return;
 }
 
+
+void item_stats(char *buffer, int buflen) {
+    char *bufcurr = buffer;
+    if (buflen < 4096) {
+        strcpy(buffer, "SERVER_ERROR out of memory");
+        return;
+    }
+    item * res;
+    int i;
+    for (i=0; i<255; i++)
+    {
+        if (footers[i])
+        {
+        	res = footers[i];
+        	while(res)
+        	{
+        		 bufcurr += sprintf(bufcurr, "第%u号桶的链表 data:%u \r\n", i,  res->data);
+        		 res = res->prev;
+        	}
+        }
+    }
+    strcpy(bufcurr, "END");
+    return;
+}
+
 int main()
 {
+	ngx_log_t *res_log = ngx_log_init(); //得到日志对象
+	ngx_pool_t * res_pool = ngx_create_pool(1024, res_log);
+
 	item_init();
-	item *it = malloc(sizeof(item) );
-    it->data = 100;
-    it->slabs_clsid = 1;
-    item_link_q(it);
+	int i;
+	for (i = 0; i< 100; i++)
+	{
+		item *it = ngx_pcalloc(res_pool, sizeof(item) );
+		it->data = 100*i;
+		it->slabs_clsid = i%10;
+		item_link_q(it);
+	}
 
-	item *jt = (item *)malloc(sizeof (item));
-    jt->data = 101;
-    jt->slabs_clsid = 1;
-    item_link_q(jt);
+    item_unlink_q(footers[1]);//删除最后一个,   footers 中每个元素都是某个双向链表的最后一个
 
-    item *kt = (item *)malloc(sizeof (item));
-    kt->data = 102;
-    kt->slabs_clsid = 1;
-    item_link_q(kt);
-
-    //item_unlink_q(footers[1]);//删除最后一个,   footers 中每个元素都是某个双向链表的最后一个
-	item *lt = (item *)malloc(sizeof (item));
-	lt->data = 103;
-	lt->slabs_clsid = 2;
-    item_link_q(lt);
-
-    char buffer[4096];
+    char *buffer = ngx_pcalloc(res_pool, 4096);
     item_stats(buffer, 4096);
+
     dd("\r\n%s\r\n" ,buffer);
-    free(it);
-    free(jt);
-    free(kt);
-    free(lt);
+
+    ngx_destroy_pool(res_pool);
 }
