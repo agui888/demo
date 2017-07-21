@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #ifndef DD_LOG
 #define DD_LOG 1
 #define dd(...) fprintf(stderr, "c *** %s: ", __func__); \
@@ -18,6 +19,7 @@ typedef struct _stritem {
 static item *headers[255];//headers数组中有 item结构体元素
 static item *footers[255];//footers数组中有 item结构体元素
 unsigned int sizes[255];
+
 
 void item_init(void) {
     int i;
@@ -37,7 +39,8 @@ void item_stats(char *buffer, int buflen) {
     }
     item * res;
     int i;
-    for (i=0; i<255; i++) {
+    for (i=0; i<255; i++)
+    {
         if (footers[i])
         {
         	res = footers[i];
@@ -72,7 +75,8 @@ void item_link_q(item *it) {
     return;
 }
 
-void item_unlink_q(item *it) {
+void item_unlink_q(item *it)
+{
     item **headres = &headers[it->slabs_clsid];
     item **footeres = &footers[it->slabs_clsid];
 
