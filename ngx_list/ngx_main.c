@@ -115,6 +115,7 @@ int main()
 
 
 	ngx_list_t *list = ngx_list_create(res_pool, 6, sizeof(dataMsg));
+
 	test_funcion(list);
 
 
